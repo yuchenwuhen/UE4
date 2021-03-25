@@ -19,6 +19,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent,Category="GameMode")
 	void OnCompeleteMission(APawn* InstigatorPawn);
+
+	UPROPERTY(EditDefaultsOnly,Category="camera")
+	TSubclassOf<AActor> bpcamera;
 };
 
 
