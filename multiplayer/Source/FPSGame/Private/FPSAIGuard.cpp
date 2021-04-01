@@ -11,10 +11,9 @@ AFPSAIGuard::AFPSAIGuard()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Components"));
+	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
-	PawnSensing->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSensing);
-	PawnSensing->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHear);
+	PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSensing);
 
 }
 
@@ -22,7 +21,8 @@ AFPSAIGuard::AFPSAIGuard()
 void AFPSAIGuard::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHear);
+
 }
 
 void AFPSAIGuard::OnPawnSensing(APawn * pawn)

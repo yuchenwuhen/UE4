@@ -17,12 +17,12 @@ public:
 	// Sets default values for this character's properties
 	AFPSAIGuard();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mantra")
+		class UPawnSensingComponent* PawnSensingComp;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	UPawnSensingComponent * PawnSensing;
 
 	UFUNCTION()
 	void OnPawnSensing(APawn * pawn);
