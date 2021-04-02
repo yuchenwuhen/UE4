@@ -15,10 +15,10 @@ public:
 
 	AFPSGameMode();
 
-	void CompeleteMission(APawn* InstigatorPawn);
+	void CompeleteMission(APawn* InstigatorPawn,bool bCompeleteMission);
 
 	UFUNCTION(BlueprintImplementableEvent,Category="GameMode")
-	void OnCompeleteMission(APawn* InstigatorPawn);
+	void OnCompeleteMission(APawn* InstigatorPawn,bool bCompeleteMission);
 
 	UPROPERTY(EditDefaultsOnly,Category="camera")
 	TSubclassOf<AActor> bpcamera;

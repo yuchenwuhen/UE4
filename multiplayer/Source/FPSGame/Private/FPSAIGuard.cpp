@@ -4,6 +4,8 @@
 #include "FPSAIGuard.h"
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
+#include "FPSGameMode.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -24,6 +26,11 @@ void AFPSAIGuard::BeginPlay()
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHear);
 
 	StartRotator = GetActorRotation();
+
+	GuaradState = EAIState::Idle;
+
+	changePoint = true;
+	Patrol();
 }
 
 void AFPSAIGuard::OnPawnSensing(APawn * pawn)
@@ -31,11 +38,25 @@ void AFPSAIGuard::OnPawnSensing(APawn * pawn)
 	if (pawn)
 	{
 		DrawDebugSphere(GetWorld(), pawn->GetActorLocation(), 35, 12, FColor::Red, false, 5);
+
+		//task fail
+		AFPSGameMode* GM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+		if (GM)
+		{
+			GM->CompeleteMission(pawn, false);
+		}
 	}
+
+	SetGuardState(EAIState::Alerted);
 }
 
 void AFPSAIGuard::OnNoiseHear(APawn* pawn, const FVector& Location, float Volume)
 {
+	if (GuaradState == EAIState::Alerted)
+	{
+		return;
+	}
+
 	if (pawn)
 	{
 		DrawDebugSphere(GetWorld(), Location, 35, 12, FColor::Green, false, 5);
@@ -53,17 +74,54 @@ void AFPSAIGuard::OnNoiseHear(APawn* pawn, const FVector& Location, float Volume
 
 		GetWorldTimerManager().SetTimer(handle,this, &AFPSAIGuard::ResetRotator, 3, false);
 	}
+
+	SetGuardState(EAIState::Suspicious);
 }
 
 void AFPSAIGuard::ResetRotator()
 {
+	if (GuaradState == EAIState::Alerted)
+	{
+		return;
+	}
+
 	SetActorRotation(StartRotator);
+
+	SetGuardState(EAIState::Idle);
+}
+
+void AFPSAIGuard::SetGuardState(EAIState NewState)
+{
+	if (GuaradState == NewState)
+	{
+		return;
+	}
+
+	GuaradState = NewState;
+
+	OnStateChanged(GuaradState);
+}
+
+void AFPSAIGuard::Patrol()
+{
+	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(),AIPoint1);
 }
 
 // Called every frame
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (GetDistanceTo(AIPoint1) < 0.01f && !changePoint)
+	{
+		changePoint = true;
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), AIPoint2);
+	}
+	else if(GetDistanceTo(AIPoint2) < 0.01f && changePoint)
+	{
+		changePoint = true;
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), AIPoint1);
+	}
 
 }
 
