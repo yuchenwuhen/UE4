@@ -34,6 +34,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditInstanceOnly,Category = "AI")
+	bool bPatrol;
+
 	UFUNCTION()
 	void OnPawnSensing(APawn * pawn);
 
@@ -58,6 +61,8 @@ protected:
 	AActor * AIPoint1;
 	UPROPERTY(EditInstanceOnly, Category = "points")
 	AActor * AIPoint2;
+
+	AActor * CurrentPoint;
 
 	void Patrol();
 
