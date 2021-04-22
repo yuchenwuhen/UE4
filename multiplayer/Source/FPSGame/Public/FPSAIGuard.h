@@ -50,7 +50,11 @@ protected:
 	UFUNCTION()
 	void ResetRotator();
 
+	UPROPERTY(ReplicatedUsing = OnRep_GuardState)
 	EAIState GuaradState;
+
+	UFUNCTION()
+	void OnRep_GuardState();
 
 	void SetGuardState(EAIState NewState);
 

@@ -1,0 +1,1 @@
+RebasePublicIncludePaths -Project="path/to/FPSGame.uproject" -UpdateDir="path/to/code" -Write
