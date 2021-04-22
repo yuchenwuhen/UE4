@@ -7,6 +7,7 @@ public class FPSGameTarget : TargetRules
 {
 	public FPSGameTarget(TargetInfo Target) : base(Target)
 	{
+		DefaultBuildSettings = BuildSettingsVersion.V2;
 		Type = TargetType.Game;
 		ExtraModuleNames.Add("FPSGame");
 	}

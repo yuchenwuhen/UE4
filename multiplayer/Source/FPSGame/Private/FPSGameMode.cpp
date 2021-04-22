@@ -5,6 +5,7 @@
 #include "FPSCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "FPSGameState.h"
 
 
 AFPSGameMode::AFPSGameMode()
@@ -15,6 +16,8 @@ AFPSGameMode::AFPSGameMode()
 
 	// use our custom HUD class
 	HUDClass = AFPSHUD::StaticClass();
+
+	GameStateClass = AFPSGameState::StaticClass();
 }
 
 void AFPSGameMode::CompeleteMission(APawn* InstigatorPawn,bool bCompleteMission)
@@ -31,16 +34,25 @@ void AFPSGameMode::CompeleteMission(APawn* InstigatorPawn,bool bCompleteMission)
 			{
 				AActor* newTarget = results[0];
 
-				APlayerController * player = Cast<APlayerController>(InstigatorPawn->GetController());
-				if (player)
+				for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
 				{
-					player->SetViewTargetWithBlend(newTarget, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
+					APlayerController* player = It->Get();
+					if (player)
+					{
+						player->SetViewTargetWithBlend(newTarget, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
+					}
 				}
+				
 			}
 		}
 		
 	}
 
+	AFPSGameState* GS = GetGameState<AFPSGameState>();
+	if (GS)
+	{
+		GS->MulticastOnMissionCompelete(InstigatorPawn, bCompleteMission);
+	}
 
 	OnCompeleteMission(InstigatorPawn, bCompleteMission);
 }
