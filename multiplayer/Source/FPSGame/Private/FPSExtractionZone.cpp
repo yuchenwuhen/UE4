@@ -50,7 +50,6 @@ void AFPSExtractionZone::BeginOverlap(UPrimitiveComponent *OverlappedComponent, 
 		UGameplayStatics::PlaySound2D(this, ObjectiveMissingSound);
 	}
 	UE_LOG(LogTemp, Log, TEXT("Overlapped with extraction zone."));
-	UE_LOG(LogTemp, Log, TEXT("Overlapped with extraction zone."));
 }
 
 

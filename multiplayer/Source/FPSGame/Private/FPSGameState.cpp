@@ -9,7 +9,7 @@ void AFPSGameState::MulticastOnMissionCompelete_Implementation(APawn* Instigatio
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator();It;It++)
 	{
-		AFPSPlayerController* controller = It->Get();
+		AFPSPlayerController* controller = Cast<AFPSPlayerController>(It->Get());
 		if (controller && controller->IsLocalPlayerController())
 		{
 			controller->OnCompeleteMission(InstigatiorPawn, bMissionSuccess);
