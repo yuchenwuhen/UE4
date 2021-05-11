@@ -9,6 +9,7 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class USHealthComponent;
 
 UCLASS()
 class COOPGAME_API ASCharacter : public ACharacter
@@ -18,6 +19,9 @@ class COOPGAME_API ASCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
+
+	UPROPERTY(Replicated,BlueprintReadOnly, Category = "Player")
+	bool bDied;
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,6 +51,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "FVO", meta = (ClampMin = 0.1f, ClampMax = 100.0f))
 	float zoomSpeed;
 
+	UPROPERTY(Replicated)
 	ASWeapon* CurWeapon;
 
 	FName WeaponSocket;
@@ -57,6 +62,15 @@ protected:
 	void StartFire();
 
 	void StopFire();
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Player")
+	USHealthComponent* HealthComp;
+
+
+
+	UFUNCTION()
+	void OnHealthChanged(USHealthComponent* HealthComp1, float Health, float HealthDelta, const class UDamageType* DamageType, 
+		class AController* InstigatedBy, AActor* DamageCauser);
 
 public:	
 	// Called every frame

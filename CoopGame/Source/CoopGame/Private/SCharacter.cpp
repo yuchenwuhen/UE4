@@ -3,9 +3,13 @@
 
 #include "SCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "CoopGame/CoopGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SWeapon.h"
+#include "SHealthComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -17,12 +21,17 @@ ASCharacter::ASCharacter()
 	springArm->bUsePawnControlRotation = true;
 	springArm->SetupAttachment(RootComponent);
 
+	GetCapsuleComponent()->SetCollisionResponseToChannel(CHANNEL_WEAPON, ECR_Ignore);
+
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
 	cameraCmp = CreateDefaultSubobject<UCameraComponent>(TEXT("cameraCmp"));
 	cameraCmp->SetupAttachment(springArm);
 
-	defaultFVO = cameraCmp->FieldOfView;
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("healthComp"));
+
+
+
 	zoomFVO = 20.0f;
 	zoomSpeed = 20.0f;
 
@@ -33,14 +42,23 @@ ASCharacter::ASCharacter()
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	FActorSpawnParameters spawnParams;
-	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	CurWeapon = GetWorld()->SpawnActor<ASWeapon>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, spawnParams);
-	if (CurWeapon)
+
+	defaultFVO = cameraCmp->FieldOfView;
+	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+
+	if (HasAuthority())
 	{
-		CurWeapon->SetOwner(this);
-		CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		FActorSpawnParameters spawnParams;
+		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		CurWeapon = GetWorld()->SpawnActor<ASWeapon>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, spawnParams);
+		if (CurWeapon)
+		{
+			CurWeapon->SetOwner(this);
+			CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		}
 	}
+
+
 }
 
 void ASCharacter::MoveForward(float value)
@@ -89,6 +107,22 @@ void ASCharacter::StopFire()
 	}
 }
 
+void ASCharacter::OnHealthChanged(USHealthComponent* HealthComp1,float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (Health <= 0.0f && !bDied)
+	{
+		//Died
+		bDied = true;
+
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		DetachFromControllerPendingDestroy();
+
+		SetLifeSpan(10.0f);
+	}
+}
+
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
@@ -130,5 +164,13 @@ FVector ASCharacter::GetPawnViewLocation() const
 	}
 
 	return Super::GetPawnViewLocation();
+}
+
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASCharacter, CurWeapon);
+	DOREPLIFETIME(ASCharacter, bDied);
 }
 
